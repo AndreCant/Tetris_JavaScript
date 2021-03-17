@@ -30,3 +30,9 @@ export function handleClickStart(){
 
     button.addEventListener('click', handleClickStop);
 }
+
+export function getRandomInt(min = 0, max = 6) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}

@@ -1,13 +1,14 @@
 import Matrix from './Matrix.js';
+import { TETRIS } from '/src/constants/index.js';
 
 export default class Tetris{
-    constructor(color) {
+    constructor(tetrisType) {
         this.matrix = new Matrix(4, 4);
         this.matrix.setValue(1, 0, 1);
         this.matrix.setValue(1, 1, 0);
         this.matrix.setValue(1, 1, 1);
         this.matrix.setValue(1, 2, 1);
-        this.color = color;
+        // this.color = color;
         this.position = {
             x: 6,
             y: 2

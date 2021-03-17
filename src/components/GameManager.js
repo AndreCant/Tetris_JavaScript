@@ -1,5 +1,6 @@
 import Tetris from './Tetris.js';
 import GameBoard from './GameBoard.js';
+import GameController from './GameController.js';
 import {initAbsolute, setStyle} from '/src/utils/index.js';
 import {SCALE, COLOR_1, COLOR_2} from '/src/constants/index.js';
 
@@ -7,10 +8,12 @@ export default class GameManager{
     
     constructor(){
         this.element = this.initScreen();
-        this.times = this.resetTimes(1000);
+        this.times = this.resetTimes(200);
         this.board = new GameBoard(this.screenWidth / SCALE, this.screenHeight / SCALE);
-        this.tetris = new Tetris('#FFF');
-        this.update();
+        this.controller = new GameController();
+        // this.tetris = new Tetris('#FFF');
+        this.tetris = this.controller.generateTetris();
+        this.startGame();
     }
     
     get context(){
@@ -69,6 +72,7 @@ export default class GameManager{
             justifyContent: 'center',
             alignItems: 'center'
         });
+
         this.initContext(canvas);
 
         return canvas;
@@ -111,11 +115,8 @@ export default class GameManager{
         this.tetris.position.y = 0;
     }
 
-    update(timer = 0) {
-        console.log('timer',timer);
-        console.log(this.times.lastDt);
-        console.log(this.times.interval);
-        this.times.lastDt += (timer - this.times.lastTime);
+    update(time = 0) {
+        this.times.lastDt += (time - this.times.lastTime);
         if (this.times.lastDt > this.times.interval) {
             this.drop();
         }
@@ -123,8 +124,42 @@ export default class GameManager{
         this.setGameBoard();
         this.tetris.output(this.context);
         this.board.draw(this.context);
-        this.times.lastTime = timer;
+        this.times.lastTime = time;
 
-        requestAnimationFrame(() => {this.update()});
+        requestAnimationFrame(time => this.update(time));
+    }
+
+    inputController(event){
+        const { key } = event;
+        let direction = 0;
+    
+        switch (key) {
+            case 'ArrowLeft':
+                direction = -1;
+                break;
+            case 'ArrowRight':
+                direction = 1;
+                break;
+            case 'ArrowDown':
+                this.drop();
+                break;
+            case ' ':
+                this.tetris.rotate();
+                if (this.tetris.isEdge(this.screenWidth / SCALE)) this.tetris.checkAfterRotate(this.screenWidth / SCALE);
+                if (this.board.collide(this.tetris)) this.merge();
+                break;
+            default:
+                break;
+        }
+        this.tetris.position.x += direction;
+    
+        if (direction != 0 && (this.tetris.isEdge(this.screenWidth / SCALE) || this.board.elementCollide(this.tetris))) {
+            this.tetris.position.x -= direction;
+        }
+    }
+
+    startGame(){
+        window.addEventListener('keydown', event => this.inputController(event));
+        this.update();
     }
 }

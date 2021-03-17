@@ -2,7 +2,7 @@ import Sidebar from './Sidebar.js';
 import GameManager from './GameManager.js';
 import {initAbsolute, setStyle} from '/src/utils/index.js';
 
-export default class Tetris {
+export default class Game {
     constructor(){
         this.initGame();
     }
