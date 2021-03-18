@@ -1,11 +1,13 @@
 import Matrix from './Matrix.js';
+import { TETRIS_COLORS } from '/src/constants/index.js';
 
-const COLORS = ['', 'red', 'green'];
+
 
 export default class Board{
-    constructor(width, height) {
+    constructor(width, height, controller) {
         this.width = width;
         this.height = height;
+        this.controller = controller;
         this.elements = new Matrix(width, height);
     }
 
@@ -38,9 +40,17 @@ export default class Board{
     draw(context){
         this.elements.iterate((value, x, y) => {
             if (value !== 0) {
-                context.fillStyle = COLORS[value];
+                context.fillStyle = TETRIS_COLORS[value];
                 context.fillRect(x, y, 1, 1);
             }
         });
+    }
+
+    deleteRows(){
+        // this.controller.lines += this.elements.deleteRows();
+        const lines = this.elements.deleteRows();
+
+        this.controller.points += (lines * this.controller.level * 100);
+        this.controller.increaseLevel(lines);
     }
 }

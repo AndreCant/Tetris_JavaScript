@@ -29,7 +29,6 @@ export default class Matrix{
 
     reset(width, height){
         while(height-- > 0){
-            console.log('columns', width);
             this.elements.push(new Array(width).fill(0));
         }
     }
@@ -40,6 +39,26 @@ export default class Matrix{
                 callback(value, x, y);
             });
         });
+    }
+
+    deleteRows(){
+        let rows = [];
+        const len = this.elements.length;
+        this.elements.forEach((row, index) => {  
+            if (row.every(value => value !== 0)) {
+                rows.push(index);
+            }
+        });
+
+        rows.forEach(index => {
+            this.elements.splice(index, 1);
+        });
+
+        for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
+            this.elements.unshift(new Array(this.elements[0].length).fill(0));
+        }
+        
+        return rows.length;
     }
 
     print(){

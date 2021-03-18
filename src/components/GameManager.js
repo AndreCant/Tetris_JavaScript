@@ -1,4 +1,3 @@
-import Tetris from './Tetris.js';
 import GameBoard from './GameBoard.js';
 import GameController from './GameController.js';
 import {initAbsolute, setStyle} from '/src/utils/index.js';
@@ -9,11 +8,10 @@ export default class GameManager{
     constructor(){
         this.element = this.initScreen();
         this.times = this.resetTimes(200);
-        this.board = new GameBoard(this.screenWidth / SCALE, this.screenHeight / SCALE);
-        this.controller = new GameController();
-        // this.tetris = new Tetris('#FFF');
+        this.controller = new GameController(1);
+        this.board = new GameBoard(this.screenWidth / SCALE, this.screenHeight / SCALE, this.controller);
         this.tetris = this.controller.generateTetris();
-        this.startGame();
+        this.inputListener = event => this.inputController(event);
     }
     
     get context(){
@@ -35,6 +33,13 @@ export default class GameManager{
     }
     set screenHeight(height){
         this._screenHeight = height;
+    }
+
+    get refreshId(){
+        return this._refreshId;
+    }
+    set refreshId(refreshId){
+        this._refreshId = refreshId;
     }
 
     initScreen(){
@@ -105,14 +110,19 @@ export default class GameManager{
 
     drop() {
         this.tetris.position.y++;
+        this.controller.points++;
         if (this.board.collide(this.tetris)) this.merge();
         this.times.lastDt = 0;
     }
 
     merge(){
         this.tetris.position.y--;
-        this.board.merge(this.tetris);
-        this.tetris.position.y = 0;
+        if (this.tetris.position.y) {
+            this.board.merge(this.tetris);
+            this.tetris = this.startNewTetris();
+        }else{
+            this.gameOver();
+        }
     }
 
     update(time = 0) {
@@ -126,7 +136,18 @@ export default class GameManager{
         this.board.draw(this.context);
         this.times.lastTime = time;
 
-        requestAnimationFrame(time => this.update(time));
+        this.startGraphicRefresh();
+    }
+
+    startGraphicRefresh(){
+        this.refreshId = window.requestAnimationFrame(time => this.update(time));
+    }
+
+    stopGraphicRefresh(){
+        if (this.refreshId) {
+            window.cancelAnimationFrame(this.refreshId);
+            this.refreshId = undefined;
+         }
     }
 
     inputController(event){
@@ -159,7 +180,22 @@ export default class GameManager{
     }
 
     startGame(){
-        window.addEventListener('keydown', event => this.inputController(event));
+        window.addEventListener('keydown', this.inputListener);
         this.update();
+    }
+
+    stopGame(){
+        window.removeEventListener('keydown', this.inputListener);
+        this.stopGraphicRefresh();
+    }
+
+    startNewTetris(){
+        this.board.deleteRows();
+        return this.controller.generateTetris();
+    }
+
+    gameOver(){
+        console.log('GAME OVER');
+        this.stopGame();
     }
 }
