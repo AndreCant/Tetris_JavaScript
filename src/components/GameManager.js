@@ -1,17 +1,18 @@
 import GameBoard from './GameBoard.js';
 import GameController from './GameController.js';
 import {initAbsolute, setStyle} from '/src/utils/index.js';
-import {SCALE, COLOR_1, COLOR_2} from '/src/constants/index.js';
+import {SCALE, COLOR_1, COLOR_2, DEFAULT_DIFFICULTY} from '/src/constants/index.js';
 
 export default class GameManager{
     
     constructor(){
+        this.inputListener = event => this.inputController(event);
+
         this.element = this.initScreen();
-        this.times = this.resetTimes(200);
-        this.controller = new GameController(1);
+        this.controller = new GameController();
         this.board = new GameBoard(this.screenWidth / SCALE, this.screenHeight / SCALE, this.controller);
         this.tetris = this.controller.generateTetris();
-        this.inputListener = event => this.inputController(event);
+        this.times = this.resetTimes(DEFAULT_DIFFICULTY);
     }
     
     get context(){
@@ -42,6 +43,13 @@ export default class GameManager{
         this._refreshId = refreshId;
     }
 
+    get isGameOver(){
+        return this._isGameOver;
+    }
+    set isGameOver(isGameOver){
+        this._isGameOver = isGameOver;
+    }
+
     initScreen(){
         const article = this.createArticle();
         const canvas = this.createCanvas();
@@ -68,8 +76,10 @@ export default class GameManager{
     createCanvas(){
         const canvas = document.createElement('canvas');
         canvas.setAttribute('id', 'screen');
-        canvas.setAttribute('width', '256px');
-        canvas.setAttribute('height', '512px');
+        canvas.setAttribute('width', '400px');
+        canvas.setAttribute('height', '800px');
+        // canvas.setAttribute('width', '100%');
+        // canvas.setAttribute('height', '200vw');
 
         initAbsolute(canvas, ['top', 'bottom', 'left']);
         setStyle(canvas, {
@@ -100,6 +110,14 @@ export default class GameManager{
         }
     }
 
+    setLevel(level){
+        this.controller.level = level;
+    }
+
+    setDifficulty(){
+        this.times.interval = DEFAULT_DIFFICULTY / this.controller.level;
+    }
+
     resetTimes(interval){
         return {
             lastTime: 0,
@@ -113,6 +131,8 @@ export default class GameManager{
         this.controller.points++;
         if (this.board.collide(this.tetris)) this.merge();
         this.times.lastDt = 0;
+
+        this.updateInfo();
     }
 
     merge(){
@@ -120,23 +140,26 @@ export default class GameManager{
         if (this.tetris.position.y) {
             this.board.merge(this.tetris);
             this.tetris = this.startNewTetris();
+            this.setDifficulty();
         }else{
             this.gameOver();
         }
     }
 
     update(time = 0) {
-        this.times.lastDt += (time - this.times.lastTime);
-        if (this.times.lastDt > this.times.interval) {
-            this.drop();
+        if (!this.isGameOver) {
+            this.times.lastDt += (time - this.times.lastTime);
+            if (this.times.lastDt > this.times.interval) {
+                this.drop();
+            }
+    
+            this.setGameBoard();
+            this.tetris.output(this.context);
+            this.board.draw(this.context);
+            this.times.lastTime = time;
+    
+            this.startGraphicRefresh();
         }
-
-        this.setGameBoard();
-        this.tetris.output(this.context);
-        this.board.draw(this.context);
-        this.times.lastTime = time;
-
-        this.startGraphicRefresh();
     }
 
     startGraphicRefresh(){
@@ -164,7 +187,7 @@ export default class GameManager{
             case 'ArrowDown':
                 this.drop();
                 break;
-            case ' ':
+            case 'ArrowUp':
                 this.tetris.rotate();
                 if (this.tetris.isEdge(this.screenWidth / SCALE)) this.tetris.checkAfterRotate(this.screenWidth / SCALE);
                 if (this.board.collide(this.tetris)) this.merge();
@@ -181,6 +204,9 @@ export default class GameManager{
 
     startGame(){
         window.addEventListener('keydown', this.inputListener);
+
+        this.setDifficulty();
+        this.updateLevel();
         this.update();
     }
 
@@ -197,5 +223,25 @@ export default class GameManager{
     gameOver(){
         console.log('GAME OVER');
         this.stopGame();
+        this.isGameOver = true;
+        document.getElementById('main').dispatchEvent(new CustomEvent('stop'));
+    }
+
+    updateInfo(){
+        this.updateLevel();
+        this.updateLines();
+        this.updatePoints();
+    }
+
+    updateLevel(){
+        document.getElementById('showLevel').dispatchEvent(new CustomEvent('setlevel', {detail: this.controller.level}));
+    }
+
+    updatePoints(){
+        document.getElementById('showPoints').dispatchEvent(new CustomEvent('setpoints', {detail: this.controller.points}));
+    }
+
+    updateLines(){
+        document.getElementById('showLines').dispatchEvent(new CustomEvent('setlines', {detail: this.controller.lines}));
     }
 }

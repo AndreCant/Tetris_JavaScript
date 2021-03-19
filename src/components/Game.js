@@ -4,7 +4,7 @@ import {initAbsolute, setStyle} from '/src/utils/index.js';
 
 export default class Game {
     constructor(){
-        this.start = () => this.startGame();
+        this.start = event => this.startGame(event);
         this.stop = () => this.stopGame();
         this.initGame();
     }
@@ -52,7 +52,8 @@ export default class Game {
         return appContainer;
     }
 
-    startGame(){
+    startGame(event){
+        this.gameManager.setLevel(event.detail);
         this.gameManager.startGame();
     }
 

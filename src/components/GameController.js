@@ -1,15 +1,22 @@
 import Tetris from './Tetris.js';
 import { getRandomInt } from '/src/utils/index.js';
+import { LEVEL_UPDATE } from '/src/constants/index.js';
 
 export default class GameController{
 
-    constructor(level){
+    constructor(){
         this.points = 0;
         this.lines = 0;
-        this.level = level;
-        this.currentTetris = 0;
+        this.currentTetris = null;
         this.board = null;
         this.genNextTetris();
+    }
+
+    get level(){
+        return this._level;
+    }
+    set level(level){
+        this._level = level;
     }
 
     generateTetris(){
@@ -24,8 +31,6 @@ export default class GameController{
 
     increaseLevel(lines){
         this.lines += lines;
-        this.level = Math.floor((this.lines + 10) / 10);
+        this.level = Math.floor((this.lines + LEVEL_UPDATE) / LEVEL_UPDATE);
     }
-
-
 }
