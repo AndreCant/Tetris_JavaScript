@@ -16,10 +16,23 @@ export default class GameController{
         return this._level;
     }
     set level(level){
-        this._level = level;
+        if (!this._level) {
+            this._level = level;
+        }else{
+            this._level = level;
+            this.predLevel = level;
+        }
+    }
+
+    get predLevel(){
+        return this._predLevel;
+    }
+    set predLevel(level){
+        this._predLevel = level;
     }
 
     generateTetris(){
+        console.log('qui', this.controller.level);
         this.currentTetris = this.nextTetris;
         this.genNextTetris();
         return new Tetris(this.nextTetris);
@@ -30,7 +43,9 @@ export default class GameController{
     }
 
     increaseLevel(lines){
-        this.lines += lines;
-        this.level = Math.floor((this.lines + LEVEL_UPDATE) / LEVEL_UPDATE);
+        if (lines) {
+            this.lines += lines;
+            this.level = Math.floor((this.lines + LEVEL_UPDATE) / LEVEL_UPDATE);
+        }
     }
 }

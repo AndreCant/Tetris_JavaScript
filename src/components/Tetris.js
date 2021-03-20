@@ -4,6 +4,7 @@ import { TETRIS, TETRIS_COLORS } from '/src/constants/index.js';
 export default class Tetris{
     constructor(tetrisType) {
         this.matrix = new Matrix(4, 4);
+        this.tetrisType = tetrisType;
 
         TETRIS[tetrisType].forEach(({ x, y}) => {
             this.matrix.setValue(tetrisType, x, y);
@@ -11,13 +12,15 @@ export default class Tetris{
 
         this.color = TETRIS_COLORS[tetrisType];
         this.position = {
-            x: 6,
+            x: 4,
             y: 0
         };
     }
 
     rotate(){
-        this.matrix.transpose();
+        if (this.tetrisType !== 3) {
+            this.matrix.transpose(); 
+        }
     }
 
     checkAfterRotate(colums){

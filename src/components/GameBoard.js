@@ -47,7 +47,6 @@ export default class Board{
     }
 
     deleteRows(){
-        // this.controller.lines += this.elements.deleteRows();
         const lines = this.elements.deleteRows();
 
         this.controller.points += (lines * this.controller.level * 100);

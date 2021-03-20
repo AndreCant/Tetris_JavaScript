@@ -1,7 +1,7 @@
 import GameBoard from './GameBoard.js';
 import GameController from './GameController.js';
 import {initAbsolute, setStyle} from '/src/utils/index.js';
-import {SCALE, COLOR_1, COLOR_2, DEFAULT_DIFFICULTY} from '/src/constants/index.js';
+import {BOARD_COLOR, DEFAULT_DIFFICULTY, RESOLUTION} from '/src/constants/index.js';
 
 export default class GameManager{
     
@@ -10,7 +10,7 @@ export default class GameManager{
 
         this.element = this.initScreen();
         this.controller = new GameController();
-        this.board = new GameBoard(this.screenWidth / SCALE, this.screenHeight / SCALE, this.controller);
+        this.board = new GameBoard(this.screenWidth / this.scale, this.screenHeight / this.scale, this.controller);
         this.tetris = this.controller.generateTetris();
         this.times = this.resetTimes(DEFAULT_DIFFICULTY);
     }
@@ -50,6 +50,13 @@ export default class GameManager{
         this._isGameOver = isGameOver;
     }
 
+    get scale(){
+        return this._scale;
+    }
+    set scale(scale){
+        this._scale = scale;
+    }
+
     initScreen(){
         const article = this.createArticle();
         const canvas = this.createCanvas();
@@ -67,25 +74,26 @@ export default class GameManager{
         article.style.left = '30%';
     
         setStyle(article, {
-            border: '3px solid black'
+            margin: '2%',
+            textAlign: 'center'
         });
 
         return article;
     }
 
     createCanvas(){
+        const res = Number(window.outerHeight.toString().substring(0,1)) - 2;
+        this.scale = RESOLUTION[res].scale;
+
         const canvas = document.createElement('canvas');
         canvas.setAttribute('id', 'screen');
-        canvas.setAttribute('width', '400px');
-        canvas.setAttribute('height', '800px');
-        // canvas.setAttribute('width', '100%');
-        // canvas.setAttribute('height', '200vw');
+        canvas.setAttribute('width', `${RESOLUTION[res].width}px`);
+        canvas.setAttribute('height', `${RESOLUTION[res].height}px`);
 
         initAbsolute(canvas, ['top', 'bottom', 'left']);
         setStyle(canvas, {
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center'
+            display: 'block',
+            margin: '0 auto'
         });
 
         this.initContext(canvas);
@@ -95,7 +103,7 @@ export default class GameManager{
 
     initContext(screen){
         const context = screen.getContext('2d');
-        context.scale(SCALE, SCALE);
+        context.scale(this.scale, this.scale);
         
         this.screenWidth = screen.width;
         this.screenHeight = screen.height;
@@ -104,17 +112,19 @@ export default class GameManager{
     }
 
     setGameBoard(){
-        for (let index = 0; index < this.screenWidth / SCALE ; index++) {
-            this.context.fillStyle = index % 2 == 0 ? COLOR_1 : COLOR_2;
-            this.context.fillRect(index, 0, 1, this.screenHeight / SCALE);
+        for (let index = 0; index < this.screenWidth / this.scale ; index++) {
+            this.context.fillStyle = BOARD_COLOR;
+            this.context.fillRect(index, 0, 1, this.screenHeight / this.scale);
         }
     }
 
     setLevel(level){
+        console.log('setlevel',level);
         this.controller.level = level;
     }
 
     setDifficulty(){
+        console.log('setdifficulty:', this.controller.level);
         this.times.interval = DEFAULT_DIFFICULTY / this.controller.level;
     }
 
@@ -189,7 +199,7 @@ export default class GameManager{
                 break;
             case 'ArrowUp':
                 this.tetris.rotate();
-                if (this.tetris.isEdge(this.screenWidth / SCALE)) this.tetris.checkAfterRotate(this.screenWidth / SCALE);
+                if (this.tetris.isEdge(this.screenWidth / this.scale)) this.tetris.checkAfterRotate(this.screenWidth / this.scale);
                 if (this.board.collide(this.tetris)) this.merge();
                 break;
             default:
@@ -197,7 +207,7 @@ export default class GameManager{
         }
         this.tetris.position.x += direction;
     
-        if (direction != 0 && (this.tetris.isEdge(this.screenWidth / SCALE) || this.board.elementCollide(this.tetris))) {
+        if (direction != 0 && (this.tetris.isEdge(this.screenWidth / this.scale) || this.board.elementCollide(this.tetris))) {
             this.tetris.position.x -= direction;
         }
     }

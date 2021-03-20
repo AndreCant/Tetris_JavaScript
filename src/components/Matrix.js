@@ -3,7 +3,6 @@ export default class Matrix{
     constructor(width, height){
         this.elements = [];
         this.reset(width, height);
-
     }
 
     transpose(){
