@@ -1,5 +1,5 @@
 import Matrix from './Matrix.js';
-import { TETRIS, TETRIS_COLORS } from '/src/constants/index.js';
+import { TETRIS, TETRIS_COLORS, BOARD_COLOR, GRID_DIMENSION } from '/src/constants/index.js';
 
 export default class Tetris{
     constructor(tetrisType) {
@@ -11,8 +11,9 @@ export default class Tetris{
         });
 
         this.color = TETRIS_COLORS[tetrisType];
+
         this.position = {
-            x: 4,
+            x: (tetrisType == 2 || tetrisType == 4 || tetrisType == 7) ? 3 : 4,
             y: 0
         };
     }
@@ -41,10 +42,14 @@ export default class Tetris{
     }
 
     output(context){
-        context.fillStyle = this.color;
         this.matrix.iterate((value, x, y) => {
             if (value !== 0) {
+                context.fillStyle = this.color;
                 context.fillRect(x + this.position.x, y + this.position.y, 1, 1);
+
+                context.fillStyle = BOARD_COLOR;
+                context.fillRect(x + this.position.x, y + this.position.y, GRID_DIMENSION, 1);
+                context.fillRect(x + this.position.x, y + this.position.y, 1, GRID_DIMENSION);
             }
         });
     }

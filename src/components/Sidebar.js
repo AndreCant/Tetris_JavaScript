@@ -71,8 +71,7 @@ export default class Sidebar {
         sidebar.setAttribute('id', 'sidebar');
         initAbsolute(sidebar, ['top', 'bottom', 'left']);
         setStyle(sidebar, {
-            width: '30%',
-            border: '3px solid black',
+            width: '20%',
             backgroundColor: '#d1d1d1',
             display: 'flex',
             justifyContent: 'center',

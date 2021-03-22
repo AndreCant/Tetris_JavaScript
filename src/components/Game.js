@@ -33,8 +33,6 @@ export default class Game {
         appContainer.appendChild(this.gameManager.element);
 
         document.body.appendChild(appContainer);
-
-        // this.setBoardDimension();
     }
 
     createContainer(){
@@ -47,34 +45,12 @@ export default class Game {
             position: 'relative',
             width: '100vw',
             height: '100vh',
-            margin: 0,
+            margin: 0
         });
         document.body.style.position = 'relative';
 
         return appContainer;
     }
-
-    // setBoardDimension(){
-    //     const article = document.getElementById('main-content');
-    //     const canvas = document.getElementById('screen');
-
-    //     const screen_w = article.offsetWidth;
-    //     const screen_h = article.offsetHeight;
-    //     const margin = parseInt(window.getComputedStyle(article).margin);
-
-    //     let width = (screen_w - (2 * margin)) / 2;
-    //     let height = screen_h - (2 * margin);
-    //     let newHeight = height;
-
-    //     for (let index = height; index > 0; index--) {
-    //         if ((index / width) === 2) {
-    //             newHeight = index;
-    //             break;
-    //         }
-    //     }
-
-    //     console.log(screen_w, screen_h, margin);
-    // }
 
     startGame(event){
         this.gameManager.setLevel(event.detail);

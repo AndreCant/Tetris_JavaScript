@@ -1,8 +1,5 @@
 import Matrix from './Matrix.js';
-import { TETRIS_COLORS } from '/src/constants/index.js';
-
-
-
+import { TETRIS_COLORS, BOARD_COLOR, GRID_DIMENSION } from '/src/constants/index.js';
 export default class Board{
     constructor(width, height, controller) {
         this.width = width;
@@ -42,6 +39,10 @@ export default class Board{
             if (value !== 0) {
                 context.fillStyle = TETRIS_COLORS[value];
                 context.fillRect(x, y, 1, 1);
+
+                context.fillStyle = BOARD_COLOR;
+                context.fillRect(x, y, GRID_DIMENSION, 1);
+                context.fillRect(x, y, 1, GRID_DIMENSION);
             }
         });
     }

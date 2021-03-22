@@ -1,7 +1,7 @@
 import GameBoard from './GameBoard.js';
 import GameController from './GameController.js';
 import {initAbsolute, setStyle} from '/src/utils/index.js';
-import {BOARD_COLOR, DEFAULT_DIFFICULTY, RESOLUTION} from '/src/constants/index.js';
+import {BOARD_COLOR, GRID_COLOR, DEFAULT_DIFFICULTY, RESOLUTION, GRID_DIMENSION} from '/src/constants/index.js';
 
 export default class GameManager{
     
@@ -57,11 +57,22 @@ export default class GameManager{
         this._scale = scale;
     }
 
+    get isPause(){
+        return this._isPause;
+    }
+    set isPause(isPause){
+        this._isPause = isPause;
+    }
+
     initScreen(){
         const article = this.createArticle();
-        const canvas = this.createCanvas();
+        const leftContainer = this.createLeftContainer();
+        const centerContainer = this.createCenterContainer();
+        const rightContainer = this.createRightContainer();
 
-        article.appendChild(canvas);
+        article.appendChild(leftContainer);
+        article.appendChild(centerContainer);
+        article.appendChild(rightContainer);
 
         return article;
     }
@@ -71,18 +82,52 @@ export default class GameManager{
         article.setAttribute('id', 'main-content');
     
         initAbsolute(article, ['top', 'bottom', 'right']);
-        article.style.left = '30%';
+        article.style.left = '20%';
     
         setStyle(article, {
             margin: '2%',
-            textAlign: 'center'
+            textAlign: 'center',
+            display: 'grid',
+            backgroundImage: 'url("/src/resources/Tetris-FB.jpg")'
         });
 
         return article;
     }
 
+    createLeftContainer(){
+        const leftContainer = this.createContainer('', '1');
+        const pointsContainer = this.createContentContainer('red', '1', 'POINTS');
+        const levelsContainer = this.createContentContainer('orange', '2', 'LEVEL');
+
+        leftContainer.appendChild(pointsContainer);
+        leftContainer.appendChild(levelsContainer);
+
+        return leftContainer;
+    }
+
+    createCenterContainer(){
+        const centerContainer = this.createContainer('', '2');
+        const canvas = this.createCanvas();
+
+        centerContainer.appendChild(canvas);
+
+        return centerContainer;
+    }
+
+    createRightContainer(){
+        const rightContainer = this.createContainer('', '3');
+        const nextTetrisContainer = this.createContentContainer('yellow', '1', 'NEXT');
+        const linesContainer = this.createContentContainer('lime', '2', 'LINES');
+
+        rightContainer.appendChild(nextTetrisContainer);
+        rightContainer.appendChild(linesContainer);
+
+        return rightContainer;
+    }
+
     createCanvas(){
-        const res = Number(window.outerHeight.toString().substring(0,1)) - 2;
+        const len = window.outerHeight == 3 ? 1 : 2; 
+        const res = Number(window.outerHeight.toString().substring(0,len)) - 2;
         this.scale = RESOLUTION[res].scale;
 
         const canvas = document.createElement('canvas');
@@ -90,7 +135,7 @@ export default class GameManager{
         canvas.setAttribute('width', `${RESOLUTION[res].width}px`);
         canvas.setAttribute('height', `${RESOLUTION[res].height}px`);
 
-        initAbsolute(canvas, ['top', 'bottom', 'left']);
+        initAbsolute(canvas, ['bottom', 'left', 'right']);
         setStyle(canvas, {
             display: 'block',
             margin: '0 auto'
@@ -99,6 +144,53 @@ export default class GameManager{
         this.initContext(canvas);
 
         return canvas;
+    }
+
+    createContainer(color, column){
+        const div = document.createElement('div');
+        setStyle(div, {
+            gridColumn: column,
+            backgroundColor: color,
+            display: 'grid'
+        });
+
+        return div;
+    }
+
+    createContentContainer(color, row, title){
+        const div = document.createElement('div');
+        div.innerText = title;
+        setStyle(div, {
+            width: '60%',
+            gridRow: row,
+            backgroundColor: 'grey',
+            margin: '18%',
+            color: color,
+            fontStyle: 'Courier',
+            fontSize: '250%',
+            borderRadius: '30% 30% 30% 30% / 25% 25% 25% 25%',
+            border: '5px solid black',
+            textShadow: '-1px 0 black, 0 1px black, 1px 0 black, 0 -1px black'
+        });
+
+        const div2 = document.createElement('div');
+        div2.innerText = 12;
+        setStyle(div2, {
+            width: '60%',
+            margin: '10%',
+            gridRow: row,
+            backgroundColor: '#4f4f4f',
+            margin: '20%',
+            color: color,
+            fontStyle: 'Courier',
+            fontSize: '100%',
+            borderRadius: '10% 10% 10% 10% / 25% 25% 25% 25%',
+            border: '3px solid black',
+            textShadow: '-1px 0 black, 0 1px black, 1px 0 black, 0 -1px black'
+        });
+        div.appendChild(div2);
+
+        return div; 
     }
 
     initContext(screen){
@@ -112,19 +204,24 @@ export default class GameManager{
     }
 
     setGameBoard(){
-        for (let index = 0; index < this.screenWidth / this.scale ; index++) {
-            this.context.fillStyle = BOARD_COLOR;
-            this.context.fillRect(index, 0, 1, this.screenHeight / this.scale);
+        for (let x = 0; x < this.screenWidth / this.scale ; x++) {
+            for (let y = 0; y < this.screenHeight / this.scale; y++) {
+                this.context.fillStyle = BOARD_COLOR;
+                this.context.fillRect(x, y, 1, 1);
+
+                this.context.fillStyle = GRID_COLOR;
+                this.context.fillRect(x, y, GRID_DIMENSION, 1);
+                this.context.fillRect(x, y, 1, GRID_DIMENSION);
+            }
         }
     }
 
     setLevel(level){
-        console.log('setlevel',level);
+        this.controller.startLevel = level;
         this.controller.level = level;
     }
 
     setDifficulty(){
-        console.log('setdifficulty:', this.controller.level);
         this.times.interval = DEFAULT_DIFFICULTY / this.controller.level;
     }
 
@@ -185,43 +282,50 @@ export default class GameManager{
 
     inputController(event){
         const { key } = event;
-        let direction = 0;
-    
-        switch (key) {
-            case 'ArrowLeft':
-                direction = -1;
-                break;
-            case 'ArrowRight':
-                direction = 1;
-                break;
-            case 'ArrowDown':
-                this.drop();
-                break;
-            case 'ArrowUp':
-                this.tetris.rotate();
-                if (this.tetris.isEdge(this.screenWidth / this.scale)) this.tetris.checkAfterRotate(this.screenWidth / this.scale);
-                if (this.board.collide(this.tetris)) this.merge();
-                break;
-            default:
-                break;
-        }
-        this.tetris.position.x += direction;
-    
-        if (direction != 0 && (this.tetris.isEdge(this.screenWidth / this.scale) || this.board.elementCollide(this.tetris))) {
-            this.tetris.position.x -= direction;
+        if (!this.isPause) {
+            let direction = 0;
+            switch (key) {
+                case 'Escape': this.stopGame();
+                    break;
+                case 'ArrowLeft':
+                    direction = -1;
+                    break;
+                case 'ArrowRight':
+                    direction = 1;
+                    break;
+                case 'ArrowDown':
+                    this.drop();
+                    break;
+                case 'ArrowUp':
+                    this.tetris.rotate();
+                    if (this.tetris.isEdge(this.screenWidth / this.scale)) this.tetris.checkAfterRotate(this.screenWidth / this.scale);
+                    if (this.board.collide(this.tetris)) this.merge();
+                    break;
+                default:
+                    break;
+            }
+            this.tetris.position.x += direction;
+        
+            if (direction != 0 && (this.tetris.isEdge(this.screenWidth / this.scale) || this.board.elementCollide(this.tetris))) {
+                this.tetris.position.x -= direction;
+            }
+        }else{
+            if (key === 'Escape') {
+                this.startGame();
+            }
         }
     }
 
     startGame(){
         window.addEventListener('keydown', this.inputListener);
-
+        this.isPause = false;
         this.setDifficulty();
         this.updateLevel();
         this.update();
     }
 
     stopGame(){
-        window.removeEventListener('keydown', this.inputListener);
+        this.isPause = true;
         this.stopGraphicRefresh();
     }
 

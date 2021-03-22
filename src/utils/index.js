@@ -35,3 +35,16 @@ export function getRandomInt(min = 1, max = 7) {
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
+
+export function generateResolutions(start, end){
+    let resolution = [];
+
+    for (let index = start; index <= end; index++) {
+        resolution.push({
+            height: index * 100, 
+            width: index * 50, 
+            scale: index * 5
+        });
+    }
+    return resolution;
+}
