@@ -1,7 +1,8 @@
 import GameBoard from './GameBoard.js';
 import GameController from './GameController.js';
+import Tetris from './Tetris.js';
 import {initAbsolute, setStyle} from '/src/utils/index.js';
-import {BOARD_COLOR, GRID_COLOR, DEFAULT_DIFFICULTY, RESOLUTION, GRID_DIMENSION} from '/src/constants/index.js';
+import {BOARD_COLOR, GRID_COLOR, DEFAULT_DIFFICULTY, RESOLUTION, GRID_DIMENSION, SOUNDTRACK, SOUND_GAME_OVER, SOUND_BOTTOM} from '/src/constants/index.js';
 
 export default class GameManager{
     
@@ -13,6 +14,7 @@ export default class GameManager{
         this.board = new GameBoard(this.screenWidth / this.scale, this.screenHeight / this.scale, this.controller);
         this.tetris = this.controller.generateTetris();
         this.times = this.resetTimes(DEFAULT_DIFFICULTY);
+        this.sounds = this.loadSounds();
     }
     
     get context(){
@@ -87,8 +89,11 @@ export default class GameManager{
         setStyle(article, {
             margin: '2%',
             textAlign: 'center',
-            display: 'grid',
-            backgroundImage: 'url("/src/resources/Tetris-FB.jpg")'
+            display: 'inline-grid',
+            gridTemplateColumns: '33% 34% 33%',
+            // backgroundImage: `url("/src/resources/${BACKGROUND_IMAGE}")`,
+            gridColumnStart: '1',
+            gridColumnEnd: '3'
         });
 
         return article;
@@ -96,8 +101,8 @@ export default class GameManager{
 
     createLeftContainer(){
         const leftContainer = this.createContainer('', '1');
-        const pointsContainer = this.createContentContainer('red', '1', 'POINTS');
-        const levelsContainer = this.createContentContainer('orange', '2', 'LEVEL');
+        const pointsContainer = this.createContentContainer('red', '1', 'POINTS', 'showPoints');
+        const levelsContainer = this.createContentContainer('orange', '2', 'LEVEL', 'showLevel');
 
         leftContainer.appendChild(pointsContainer);
         leftContainer.appendChild(levelsContainer);
@@ -116,8 +121,8 @@ export default class GameManager{
 
     createRightContainer(){
         const rightContainer = this.createContainer('', '3');
-        const nextTetrisContainer = this.createContentContainer('yellow', '1', 'NEXT');
-        const linesContainer = this.createContentContainer('lime', '2', 'LINES');
+        const nextTetrisContainer = this.createContentContainer('yellow', '1', 'NEXT', 'showNext');
+        const linesContainer = this.createContentContainer('lime', '2', 'LINES', 'showLines');
 
         rightContainer.appendChild(nextTetrisContainer);
         rightContainer.appendChild(linesContainer);
@@ -138,7 +143,9 @@ export default class GameManager{
         initAbsolute(canvas, ['bottom', 'left', 'right']);
         setStyle(canvas, {
             display: 'block',
-            margin: '0 auto'
+            margin: '0 auto',
+            borderRight: `1.5px solid ${GRID_COLOR}`,
+            borderBottom: `1.5px solid ${GRID_COLOR}`,
         });
 
         this.initContext(canvas);
@@ -151,17 +158,20 @@ export default class GameManager{
         setStyle(div, {
             gridColumn: column,
             backgroundColor: color,
-            display: 'grid'
+            display: 'grid',
+            gridTemplateRows: '50% 50%',
         });
 
         return div;
     }
 
-    createContentContainer(color, row, title){
+    createContentContainer(color, row, title, id){
+
         const div = document.createElement('div');
         div.innerText = title;
         setStyle(div, {
             width: '60%',
+            height: '60%',
             gridRow: row,
             backgroundColor: 'grey',
             margin: '18%',
@@ -174,20 +184,41 @@ export default class GameManager{
         });
 
         const div2 = document.createElement('div');
-        div2.innerText = 12;
         setStyle(div2, {
             width: '60%',
-            margin: '10%',
-            gridRow: row,
             backgroundColor: '#4f4f4f',
             margin: '20%',
-            color: color,
+            color: 'white',
             fontStyle: 'Courier',
             fontSize: '100%',
             borderRadius: '10% 10% 10% 10% / 25% 25% 25% 25%',
             border: '3px solid black',
             textShadow: '-1px 0 black, 0 1px black, 1px 0 black, 0 -1px black'
         });
+        
+        if (id !== 'showNext') {
+            div2.setAttribute('id', id);
+            div2.innerText = 0;  
+        }else{
+            const canvas = document.createElement('canvas');
+            canvas.setAttribute('id', id);
+            canvas.setAttribute('width', '100%');
+            canvas.setAttribute('height', '100%');
+            canvas.addEventListener('nextTetris', this.showNextTetris);
+            const context = canvas.getContext('2d');
+
+            setStyle(canvas, {
+                display: 'block',
+                margin: '0 auto',
+                padding: '10%'
+            });
+
+            context.scale(canvas.width / 6, canvas.height / 6);
+            this.setGameBoard(context, 6, 6);
+
+            div2.appendChild(canvas);
+        }
+
         div.appendChild(div2);
 
         return div; 
@@ -200,18 +231,18 @@ export default class GameManager{
         this.screenWidth = screen.width;
         this.screenHeight = screen.height;
         this.context = context;
-        this.setGameBoard();
+        this.setGameBoard(this.context, this.screenWidth/this.scale, this.screenHeight/this.scale);
     }
 
-    setGameBoard(){
-        for (let x = 0; x < this.screenWidth / this.scale ; x++) {
-            for (let y = 0; y < this.screenHeight / this.scale; y++) {
-                this.context.fillStyle = BOARD_COLOR;
-                this.context.fillRect(x, y, 1, 1);
+    setGameBoard(context, rows, cols){
+        for (let x = 0; x < rows ; x++) {
+            for (let y = 0; y < cols; y++) {
+                context.fillStyle = BOARD_COLOR;
+                context.fillRect(x, y, 1, 1);
 
-                this.context.fillStyle = GRID_COLOR;
-                this.context.fillRect(x, y, GRID_DIMENSION, 1);
-                this.context.fillRect(x, y, 1, GRID_DIMENSION);
+                context.fillStyle = GRID_COLOR;
+                context.fillRect(x, y, GRID_DIMENSION, 1);
+                context.fillRect(x, y, 1, GRID_DIMENSION);
             }
         }
     }
@@ -245,9 +276,11 @@ export default class GameManager{
     merge(){
         this.tetris.position.y--;
         if (this.tetris.position.y) {
+            this.sounds.bottom.play();
             this.board.merge(this.tetris);
             this.tetris = this.startNewTetris();
             this.setDifficulty();
+            this.updateNextTetris();
         }else{
             this.gameOver();
         }
@@ -260,7 +293,7 @@ export default class GameManager{
                 this.drop();
             }
     
-            this.setGameBoard();
+            this.setGameBoard(this.context, this.screenWidth/this.scale, this.screenHeight/this.scale);
             this.tetris.output(this.context);
             this.board.draw(this.context);
             this.times.lastTime = time;
@@ -319,13 +352,17 @@ export default class GameManager{
     startGame(){
         window.addEventListener('keydown', this.inputListener);
         this.isPause = false;
+        this.removeLevelButton();
         this.setDifficulty();
         this.updateLevel();
+        this.updateNextTetris();
         this.update();
+        this.sounds.soundtrack.play();
     }
 
     stopGame(){
         this.isPause = true;
+        this.sounds.soundtrack.pause();
         this.stopGraphicRefresh();
     }
 
@@ -336,8 +373,9 @@ export default class GameManager{
 
     gameOver(){
         console.log('GAME OVER');
-        this.stopGame();
         this.isGameOver = true;
+        this.sounds.soundtrack.pause();
+        this.sounds.gameOver.play();
         document.getElementById('main').dispatchEvent(new CustomEvent('stop'));
     }
 
@@ -348,14 +386,41 @@ export default class GameManager{
     }
 
     updateLevel(){
-        document.getElementById('showLevel').dispatchEvent(new CustomEvent('setlevel', {detail: this.controller.level}));
+        document.getElementById('showLevel').innerText = this.controller.level;
     }
 
     updatePoints(){
-        document.getElementById('showPoints').dispatchEvent(new CustomEvent('setpoints', {detail: this.controller.points}));
+        document.getElementById('showPoints').innerText = this.controller.points;
     }
 
     updateLines(){
-        document.getElementById('showLines').dispatchEvent(new CustomEvent('setlines', {detail: this.controller.lines}));
+        document.getElementById('showLines').innerText = this.controller.lines;
+    }
+
+    updateNextTetris(){
+        const next = this.controller.nextTetris;
+        const nextTetris = new Tetris(next);
+        const context = document.getElementById('showNext').getContext('2d');
+
+        this.setGameBoard(context, 6, 6);
+
+        nextTetris.position.x = (next == 2 || next == 4 || next == 7) ? 1 : 2;
+        nextTetris.position.y = 2;
+        nextTetris.output(context);
+    }
+
+    removeLevelButton(){
+        document.getElementById('levelButton').style.display = 'none';
+    }
+
+    loadSounds(){
+        const soundtrack = new Audio(`/src/resources/audio/${SOUNDTRACK}`);
+        const gameOver = new Audio(`/src/resources/audio/${SOUND_GAME_OVER}`);
+        const bottom = new Audio(`/src/resources/audio/${SOUND_BOTTOM}`);
+
+        soundtrack.loop = true;
+        soundtrack.volume = 0.15;
+
+        return {soundtrack, gameOver, bottom};
     }
 }

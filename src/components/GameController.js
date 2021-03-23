@@ -1,6 +1,6 @@
 import Tetris from './Tetris.js';
 import { getRandomInt } from '/src/utils/index.js';
-import { LEVEL_UPDATE } from '/src/constants/index.js';
+import { LEVEL_UPDATE, SOUND_LINES } from '/src/constants/index.js';
 
 export default class GameController{
 
@@ -9,6 +9,7 @@ export default class GameController{
         this.lines = 0;
         this.currentTetris = null;
         this.board = null;
+        this.sound = new Audio(`/src/resources/audio/${SOUND_LINES}`);
         this.genNextTetris();
     }
 
@@ -29,7 +30,7 @@ export default class GameController{
     generateTetris(){
         this.currentTetris = this.nextTetris;
         this.genNextTetris();
-        return new Tetris(this.nextTetris);
+        return new Tetris(this.currentTetris);
     }
 
     genNextTetris(){
@@ -38,6 +39,7 @@ export default class GameController{
 
     increaseLevel(lines){
         if (lines) {
+            this.sound.play();
             this.lines += lines;
             this.level = Number(this.startLevel) + Math.floor((this.lines + LEVEL_UPDATE) / LEVEL_UPDATE);
         }

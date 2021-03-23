@@ -1,12 +1,13 @@
 import { generateResolutions } from '/src/utils/index.js';
 
-export const START_GAME = 'INIZIA';
-export const STOP_GAME = 'STOP';
+export const START_GAME = 'PLAY';
+export const STOP_GAME = 'PAUSE';
+export const NEW_GAME = 'START NEW GAME';
 export const SCALE = 30;
 export const BOARD_COLOR = '#111111';
 export const GRID_COLOR = 'grey';
 export const GRID_DIMENSION = 0.03;
-export const LEVEL_UPDATE = 1;
+export const LEVEL_UPDATE = 3;
 export const DEFAULT_DIFFICULTY = 1500;
 export const TETRIS = [
     [],
@@ -20,3 +21,7 @@ export const TETRIS = [
 ];
 export const TETRIS_COLORS = ['', 'magenta', 'lightBlue', 'yellow', 'blue', 'orange', 'green', 'red'];
 export const RESOLUTION = generateResolutions(0, 20);
+export const SOUNDTRACK = 'soundtrack.mp3';
+export const SOUND_LINES = 'lines.mp3';
+export const SOUND_GAME_OVER = 'gameover.mp3';
+export const SOUND_BOTTOM = 'bottom.mp3';
