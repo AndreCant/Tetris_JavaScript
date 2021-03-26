@@ -1,5 +1,5 @@
 import {initAbsolute, setStyle} from '/src/utils/index.js';
-import {START_GAME, STOP_GAME, NEW_GAME} from '/src/constants/index.js';
+import {LOGO, LABELS} from '/src/constants/index.js';
 
 export default class Sidebar {
 
@@ -72,17 +72,9 @@ export default class Sidebar {
 
     createHeader(){
         const div =  document.createElement('div');
-        const h1 = document.createElement('h1');
-        const span_T1 = document.createElement('span');
-        const span_E = document.createElement('span');
-        const span_T2 = document.createElement('span');
-        const span_R = document.createElement('span');
-        const span_I = document.createElement('span');
-        const span_S = document.createElement('span');
-        const span_JS = document.createElement('span');
-        const h2 = document.createElement('h2');
-        this.message = document.createElement('span');
-        this.message.setAttribute('id', 'showMessage');
+        const imgContainer = document.createElement('div');
+        const img = document.createElement('img');
+        img.setAttribute('src', `/src/resources/img/${LOGO}`);
 
         setStyle(div, {
             width: '100%',
@@ -93,65 +85,18 @@ export default class Sidebar {
             textShadow: '-1px 0 black, 0 1px black, 1px 0 black, 0 -1px black'
         });
 
-        setStyle(h2, {
-            textAlign: 'center'
+        setStyle(img, {
+            maxWidth: '100%',
+            maxHeight: '100%'
         });
         
-        span_T1.innerText = 'T';
-        setStyle(span_T1, {
-            color: 'red',
+        setStyle(imgContainer, {
+            width: '100%',
+            height: '100%'
         });
-        span_E.innerText = 'E';
-        setStyle(span_E, {
-            color: 'orange',
-        });
-        span_T2.innerText = 'T';
-        setStyle(span_T2, {
-            color: 'yellow',
-        });
-        span_R.innerText = 'R';
-        setStyle(span_R, {
-            color: 'lime',
-        });
-        span_I.innerText = 'I';
-        setStyle(span_I, {
-            color: 'blue',
-        });
-        span_S.innerText = 'S';
-        setStyle(span_S, {
-            color: 'magenta',
-        });
-        span_JS.innerText = '  JS';
-        setStyle(span_JS, {
-            color: 'yellow',
-        });
-        this.message.innerText = 'GAME \nOVER';
-        setStyle(this.message, {
-            color: 'red',
-            fontSize: '100%',
-            display: 'none'
-        });
-
-        setInterval(() => {
-            if (this.message.style.color == 'transparent') {
-                this.message.style.color = 'red';
-            }else{
-                this.message.style.color = 'transparent';
-            }
-        }, 500);
-
-        span_T1.append(span_E);
-        span_E.append(span_T2);
-        span_T2.append(span_R);
-        span_R.append(span_I);
-        span_I.append(span_S);
-        span_S.append(span_JS);
-
-        h1.appendChild(span_T1);
-        h2.appendChild(this.message);
-
-        div.appendChild(h1);
-        div.appendChild(h2);
+        
+        imgContainer.appendChild(img);
+        div.appendChild(imgContainer);
 
         return div;
     }
@@ -161,6 +106,7 @@ export default class Sidebar {
         this.playButton = this.createPlayButton();
         this.levelButton = this.createLevelButton();
         this.restartButton = this.createRestartButton();
+        this.message = this.createMessage();
         
         setStyle(div, {
             width: '100%',
@@ -173,6 +119,7 @@ export default class Sidebar {
         div.appendChild(this.levelButton);
         div.appendChild(this.playButton);
         div.appendChild(this.restartButton);
+        div.appendChild(this.message);
 
         return div;
     }
@@ -231,24 +178,24 @@ export default class Sidebar {
         const button = document.createElement('button');
         button.setAttribute('id', 'playButton');
         button.addEventListener('click', this.handleClickStart);
-        button.innerHTML = START_GAME;
+        button.innerHTML = LABELS.startGame;
 
         /** style */
         button.addEventListener('mousedown', () => {
-            button.style.backgroundColor = button.innerHTML == START_GAME ? 'lime' : 'red';
+            button.style.backgroundColor = button.innerHTML == LABELS.startGame ? 'lime' : 'red';
             button.style.boxShadow = '0 5px #666';
             button.style.transform = 'translateY(4px)';
         });
         button.addEventListener('mouseup', () => {
-            button.style.backgroundColor = button.innerHTML == START_GAME ? 'lime' : 'red';
+            button.style.backgroundColor = button.innerHTML == LABELS.startGame ? 'lime' : 'red';
             button.style.boxShadow = '0 9px #999';
             button.style.transform = 'translateY(-4px)';
         });
         button.addEventListener('mouseover', () => {
-            button.style.backgroundColor = button.innerHTML == START_GAME ? 'lime' : 'red';
+            button.style.backgroundColor = button.innerHTML == LABELS.startGame ? 'lime' : 'red';
         });
         button.addEventListener('mouseout', () => {
-            button.style.backgroundColor = button.innerHTML == START_GAME ? 'limegreen' : '#FF3333';
+            button.style.backgroundColor = button.innerHTML == LABELS.startGame ? 'limegreen' : '#FF3333';
         });
 
         this.styleGreenButton(button);
@@ -301,7 +248,7 @@ export default class Sidebar {
         const button = document.createElement('button');
         button.setAttribute('id', 'restartButton');
         button.addEventListener('click', this.handleClickRestart);
-        button.innerHTML = NEW_GAME;
+        button.innerHTML = LABELS.newGame;
 
         /** style */
         button.addEventListener('mousedown', () => {
@@ -327,6 +274,31 @@ export default class Sidebar {
         return button;
     }
 
+    createMessage(){
+        const span = document.createElement('span');
+        span.setAttribute('id', 'showMessage');
+        span.innerText = LABELS.message;
+
+        setStyle(span, {
+            color: 'red',
+            fontSize: '400%',
+            display: 'none',
+            textAlign: 'center',
+            margin: '15%',
+            textShadow: '-1px 0 black, 0 1px black, 1px 0 black, 0 -1px black',
+        });
+
+        setInterval(() => {
+            if (span.style.color == 'transparent') {
+                span.style.color = 'red';
+            }else{
+                span.style.color = 'transparent';
+            }
+        }, 500);
+
+        return span;
+    }
+
     styleGreenButton(button){
         setStyle(button, {
             width: '80%',
@@ -345,18 +317,20 @@ export default class Sidebar {
     }
 
     selectLevel(){
+        const lev = LABELS.level1;
+
         switch (this.levelButton.innerHTML) {
-            case 'LEVEL: 1': this.levelButton.innerHTML = 'LEVEL: 5';
+            case `${lev}1`: this.levelButton.innerHTML = `${lev}5`;
                 break;
-            case 'LEVEL: 5': this.levelButton.innerHTML = 'LEVEL: 10';
+            case `${lev}5`: this.levelButton.innerHTML = `${lev}10`;
                 break;
-            case 'LEVEL: 10': this.levelButton.innerHTML = 'LEVEL: 15';
+            case `${lev}10`: this.levelButton.innerHTML = `${lev}15`;
                 break;
-            case 'LEVEL: 15': this.levelButton.innerHTML = 'LEVEL: 20';
+            case `${lev}15`: this.levelButton.innerHTML = `${lev}20`;
                 break;
-            case 'LEVEL: 20': this.levelButton.innerHTML = 'LEVEL: 25';
+            case `${lev}20`: this.levelButton.innerHTML = `${lev}25`;
                 break;
-            case 'LEVEL: 25': this.levelButton.innerHTML = 'LEVEL: 1';
+            case `${lev}25`: this.levelButton.innerHTML = `${lev}1`;
                 break;
             default:
                 break;
@@ -365,7 +339,7 @@ export default class Sidebar {
 
     clickStop(){
         this.playButton.removeEventListener('click', this.handleClickStop);
-        this.playButton.innerHTML = START_GAME;
+        this.playButton.innerHTML = LABELS.startGame;
         this.playButton.addEventListener('click', this.handleClickStart);
 
         this.levelButton.removeAttribute('disabled');
@@ -375,7 +349,7 @@ export default class Sidebar {
     clickStart(){
         const level = this.levelButton.innerHTML.split(' ')[1];
         this.playButton.removeEventListener('click', this.handleClickStart);
-        this.playButton.innerHTML = STOP_GAME;
+        this.playButton.innerHTML = LABELS.stopGame;
         this.playButton.addEventListener('click', this.handleClickStop);
 
         this.levelButton.setAttribute('disabled', true);
@@ -389,7 +363,7 @@ export default class Sidebar {
         this.playButton.style.display = 'block';
         this.playButton.removeEventListener('click', this.handleClickStop);
         this.playButton.addEventListener('click', this.handleClickStart);
-        this.playButton.innerHTML = START_GAME;
+        this.playButton.innerHTML = LABELS.startGame;
         this.styleGreenButton(this.playButton);
 
         this.levelButton.removeAttribute('disabled');

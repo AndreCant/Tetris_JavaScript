@@ -20,8 +20,14 @@ export default class Tetris{
 
     rotate(){
         if (this.tetrisType !== 3) {
-            this.matrix.transpose(); 
+            this.matrix.transpose();
+            this.matrix.reverse();
         }
+    }
+
+    cancelRotation(){
+        this.matrix.reverse();
+        this.matrix.transpose();
     }
 
     checkAfterRotate(colums){

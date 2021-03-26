@@ -1,4 +1,4 @@
-import {START_GAME, STOP_GAME} from '/src/constants/index.js';
+import {LABELS} from '/src/constants/index.js';
 
 export function setStyle(element, objProps) {
     Object.keys(objProps).forEach(function(key) {
@@ -17,7 +17,7 @@ export function initAbsolute(element, props) {
 export function handleClickStop(){
     const button = document.getElementById('playButton');
     button.removeEventListener('click', handleClickStop);
-    button.innerHTML = START_GAME;
+    button.innerHTML = LABELS.startGame;
 
     button.addEventListener('click', handleClickStart);
 }
@@ -25,7 +25,7 @@ export function handleClickStop(){
 export function handleClickStart(){
     const button = document.getElementById('playButton');
     button.removeEventListener('click', handleClickStart);
-    button.innerHTML = STOP_GAME;
+    button.innerHTML = LABELS.stopGame;
 
     button.addEventListener('click', handleClickStop);
 }

@@ -58,7 +58,9 @@ export default class Game {
             position: 'relative',
             width: '100vw',
             height: '100vh',
-            margin: 0
+            margin: 0,
+            overflowY: 'hidden',
+            overflowX: 'hidden'
         });
         document.body.style.position = 'relative';
 

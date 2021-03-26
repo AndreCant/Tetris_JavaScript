@@ -13,6 +13,9 @@ export default class Matrix{
                 this.setValue(tmp, j, i);
             }
         }
+    }
+
+    reverse(){
         for (let i = 0; i < 4; i++) {
             this.elements[i].reverse();
         }
@@ -58,9 +61,5 @@ export default class Matrix{
         }
         
         return rows.length;
-    }
-
-    print(){
-        console.table(this.elements);
     }
 }
